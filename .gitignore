@@ -1,0 +1,14 @@
+*.class
+bin/
+gen/
+proguard/
+Thumbs.db
+.DS_Store
+
+# Android Studio
+*.iml
+.gradle
+.idea
+local.properties
+build/
+/*/build/
