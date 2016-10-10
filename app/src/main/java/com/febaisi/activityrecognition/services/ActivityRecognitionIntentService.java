@@ -35,9 +35,8 @@ public class ActivityRecognitionIntentService extends IntentService {
             for (DetectedActivity detectedActivity:result.getProbableActivities()) {
                 message += new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()) + " || " +
                         String.format("%s: %d", ActivityUtil.getActivityTypeString(detectedActivity.getType()), detectedActivity.getConfidence()) + "\n";
-                Log.i(Utils.TAG, "ActivityRecognitionIntentService - onHandleIntent. " + message);
             }
-
+            Log.i(Utils.TAG, message);
             Utils.writeToSDFile(getApplicationContext(), message, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         }
     }
