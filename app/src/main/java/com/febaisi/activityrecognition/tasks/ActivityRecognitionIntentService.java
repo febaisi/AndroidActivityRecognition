@@ -1,4 +1,4 @@
-package com.febaisi.activityrecognition.services;
+package com.febaisi.activityrecognition.tasks;
 
 import android.app.IntentService;
 import android.content.Intent;

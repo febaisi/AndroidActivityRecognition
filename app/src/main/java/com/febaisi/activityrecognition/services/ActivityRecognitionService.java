@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.febaisi.activityrecognition.Utils;
+import com.febaisi.activityrecognition.tasks.ActivityRecognitionIntentService;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 
@@ -73,7 +74,7 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
     }
 
     @Override
-    public boolean isConnected() {
+    public boolean isRecording() {
         return mRecordingState;
     }
 

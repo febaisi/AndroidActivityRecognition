@@ -5,6 +5,6 @@ package com.febaisi.activityrecognition.services;
  */
 
 public interface RecordingManager {
-    boolean isConnected();
+    boolean isRecording();
     void stopRecording();
 }

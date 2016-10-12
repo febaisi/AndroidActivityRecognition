@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">ActivityRecognitionTest</string>
     <string name="start_record">Start Recording</string>
+    <string name="recording">Recording ... </string>
     <string name="stop_record">Stop Recording</string>
+    <string name="target_state">Target State:</string>
+    <string name="empty">EMPTY</string>
+    <string name="on_foot">ON_FOOT</string>
+    <string name="in_vehicle">IN_VEHICLE</string>
 </resources>

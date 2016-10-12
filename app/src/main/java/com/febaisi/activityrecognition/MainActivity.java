@@ -7,17 +7,29 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.febaisi.activityrecognition.services.ActivityRecognitionService;
 import com.febaisi.activityrecognition.services.RecordingManager;
+import com.febaisi.activityrecognition.util.SharedPreferenceUtil;
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection {
+import java.text.SimpleDateFormat;
+
+public class MainActivity extends AppCompatActivity implements ServiceConnection, View.OnClickListener {
 
     private Context mContext;
-    private Button mRecordingButton;
+    private Button mStopRecordButton;
     private RecordingManager mRecordingManager;
+    private Intent mServiceIntent;
+    private LinearLayout mStartsButtonsLayout;
+    private TextView mCurrentTime;
+    private TextView mTargetStateDescription;
+    private TextView mRecordingStatusText;
+    private boolean mIsRecording = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,42 +37,134 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         setContentView(R.layout.activity_main);
         mContext = getApplicationContext();
 
-        final Intent intent = new Intent(mContext, ActivityRecognitionService.class);
-        mContext.bindService(intent, this, Context.BIND_AUTO_CREATE);
+        mServiceIntent = new Intent(mContext, ActivityRecognitionService.class);
+        mContext.bindService(mServiceIntent, this, Context.BIND_AUTO_CREATE);
 
-        mRecordingButton = (Button) findViewById(R.id.activity_main_record_button);
-        mRecordingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mRecordingManager.isConnected()) {
-                    mRecordingManager.stopRecording();
-                    setRecordingButtonText(false);
-                } else {
-                    mContext.startService(intent);
-                    setRecordingButtonText(true);
-                }
-            }
-        });
+        mStopRecordButton = (Button) findViewById(R.id.activity_main_stop_record_button);
+        mStopRecordButton.setOnClickListener(this);
+        ((Button) findViewById(R.id.activity_main_in_vehicle)).setOnClickListener(this);
+        ((Button) findViewById(R.id.activity_main_on_foot)).setOnClickListener(this);
+
+        mTargetStateDescription = (TextView) findViewById(R.id.activity_main_target_state_text);
+        mCurrentTime = (TextView) findViewById(R.id.activity_main_time);
+        mRecordingStatusText = (TextView) findViewById(R.id.activity_main_recording_text);
+        mStartsButtonsLayout = (LinearLayout) findViewById(R.id.activity_main_layout_starts);
     }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         mRecordingManager = ((ActivityRecognitionService.RecordingController) service).getRecordingListener();
-        setRecordingButtonText(mRecordingManager.isConnected());
+        mIsRecording = mRecordingManager.isRecording();
+        enableButtons(mIsRecording);
+        enableTicking(mIsRecording);
+        enableButtons(mIsRecording);
+        checkTargetState(mIsRecording);
+    }
+
+    private void checkTargetState(boolean mIsRecording) {
+        if (!mIsRecording){
+            SharedPreferenceUtil.saveStringPreference(this,
+                    SharedPreferenceUtil.TARGET_STATE, getString(R.string.empty));
+        }
+        updateTargetDescription();
+    }
+
+    private void updateTargetDescription() {
+        String targetMessage = SharedPreferenceUtil.getStringPreference(this,
+                SharedPreferenceUtil.TARGET_STATE, getString(R.string.empty));
+        if (targetMessage.isEmpty()) {
+            mTargetStateDescription.setText(getString(R.string.empty));
+        } else {
+            mTargetStateDescription.setText(targetMessage);
+        }
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-        setRecordingButtonText(false);
+        mIsRecording = false;
+        enableButtons(false);
     }
 
-    private void setRecordingButtonText(boolean recordingState) {
-        String message;
+    private void enableButtons(boolean recordingState) {
         if (recordingState) {
-            message = mContext.getString(R.string.stop_record);
+            mStartsButtonsLayout.setVisibility(View.INVISIBLE);
+            mRecordingStatusText.setVisibility(View.VISIBLE);
+            mStopRecordButton.setVisibility(View.VISIBLE);
         } else {
-            message = mContext.getString(R.string.start_record);
+            mRecordingStatusText.setVisibility(View.GONE);
+            mStartsButtonsLayout.setVisibility(View.VISIBLE);
+            mStopRecordButton.setVisibility(View.INVISIBLE);
         }
-        mRecordingButton.setText(message);
+    }
+
+    private void enableTicking(boolean enable) {
+        if (enable) {
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        final SimpleDateFormat databaseDateTimeFormate = new SimpleDateFormat("mm:ss:SS");
+                        final long startRecordingTime = SharedPreferenceUtil.getLongPreference(mContext, SharedPreferenceUtil.START_TIME, 0);
+                        while (mIsRecording) {
+                            Thread.sleep(10);
+                            final long currentTickTime = System.currentTimeMillis();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (mIsRecording)
+                                        mCurrentTime.setText(databaseDateTimeFormate.format(currentTickTime - startRecordingTime));
+                                }
+                            });
+                        }
+                    } catch (InterruptedException e) {
+                        Log.e(Utils.TAG, "Exception to ticking the clock!");
+                    }
+                }
+            };
+            t.start();
+        } else {
+            mCurrentTime.setText("00:00:00");
+        }
+
+    }
+
+    private void stopRecording() {
+        SharedPreferenceUtil.saveLongPreference(this, SharedPreferenceUtil.START_TIME, 0);
+        SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE, "");
+        updateTargetDescription();
+        mIsRecording = false;
+        mRecordingManager.stopRecording();
+        enableButtons(false);
+        enableTicking(false);
+    }
+
+    private void startRecording() {
+        mIsRecording = true;
+        mContext.startService(mServiceIntent);
+        enableButtons(true);
+        enableTicking(true);
+        SharedPreferenceUtil.saveLongPreference(this, SharedPreferenceUtil.START_TIME, System.currentTimeMillis());
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id) {
+            case R.id.activity_main_stop_record_button:
+                stopRecording();
+                break;
+            case R.id.activity_main_on_foot:
+                SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE,
+                        getString(R.string.on_foot));
+                updateTargetDescription();
+                startRecording();
+                break;
+            case R.id.activity_main_in_vehicle:
+                SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE,
+                        getString(R.string.in_vehicle));
+                updateTargetDescription();
+                startRecording();
+                break;
+        }
     }
 }

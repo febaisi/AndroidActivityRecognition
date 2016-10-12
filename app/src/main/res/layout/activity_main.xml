@@ -13,18 +13,95 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/textView" />
+        android:layout_gravity="center"
+        android:textColor="@android:color/holo_red_dark"
+        android:layout_centerHorizontal="true"
+        android:textSize="20sp"
+        android:layout_marginTop="40dp"
+        android:textStyle="bold"
+        android:id="@+id/activity_main_recording_text"
+        android:text="@string/recording"/>
 
-    <Button
-        android:text="@string/start_record"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginLeft="21dp"
-        android:layout_marginStart="21dp"
-        android:layout_marginTop="22dp"
-        android:id="@+id/activity_main_record_button" />
+        >
+
+        <LinearLayout
+            android:id="@+id/activity_main_layout_starts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="30dp"
+            android:gravity="center">
+            <Button
+                android:id="@+id/activity_main_on_foot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/on_foot"
+                />
+            <Button
+                android:id="@+id/activity_main_in_vehicle"
+                android:layout_marginLeft="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/in_vehicle"
+                />
+        </LinearLayout>
+
+        <TextView
+            android:text="00:00:00:000"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/activity_main_stop_record_button"
+            android:layout_alignLeft="@+id/activity_main_stop_record_button"
+            android:layout_alignStart="@+id/activity_main_stop_record_button"
+            android:textSize="50sp"
+            android:textStyle="bold"
+            android:layout_marginTop="40dp"
+            android:id="@+id/activity_main_time" />
+
+
+        <TextView
+            android:text="@string/target_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/activity_main_stop_record_button"
+            android:layout_alignLeft="@+id/activity_main_stop_record_button"
+            android:layout_alignStart="@+id/activity_main_stop_record_button"
+            android:layout_marginTop="50dp"
+            android:textSize="20sp"
+            android:id="@+id/textView2" />
+
+        <TextView
+            android:text="@string/empty"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/activity_main_stop_record_button"
+            android:layout_alignLeft="@+id/activity_main_stop_record_button"
+            android:layout_alignStart="@+id/activity_main_stop_record_button"
+            android:textSize="50sp"
+            android:textStyle="bold"
+            android:layout_marginTop="0dp"
+            android:id="@+id/activity_main_target_state_text" />
+
+        <Button
+            android:text="@string/stop_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="50dp"
+            android:layout_gravity="center"
+            android:id="@+id/activity_main_stop_record_button" />
+
+    </LinearLayout>
+
 </RelativeLayout>
