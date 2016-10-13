@@ -169,7 +169,7 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
 
     private void vibrate(){
         Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(1000);
+        v.vibrate(2500);
     }
 
 }

@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             mRecordingStatusText.setVisibility(View.GONE);
             mStartsButtonsLayout.setVisibility(View.VISIBLE);
             mStopRecordButton.setVisibility(View.INVISIBLE);
+            mCurrentTime.setText("00:00:00");
         }
     }
 
@@ -129,8 +130,19 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         updateTargetDescription();
         mIsRecording = false;
         mRecordingManager.stopRecording();
-        enableButtons(false);
+        changeViewsReset(true);
         enableTicking(false);
+    }
+
+    private void changeViewsReset(boolean resetStatus) {
+        if (resetStatus) {
+            mRecordingStatusText.setText(getString(R.string.match));
+            mStopRecordButton.setText(getString(R.string.reset));
+        } else {
+            mRecordingStatusText.setText(getString(R.string.recording));
+            mStopRecordButton.setText(getString(R.string.stop_record));
+            enableButtons(false);
+        }
     }
 
     private void startRecording() {
@@ -146,7 +158,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         int id = v.getId();
         switch (id) {
             case R.id.activity_main_stop_record_button:
-                stopRecording();
+                if (mIsRecording) {
+                    stopRecording();
+                } else {
+                    changeViewsReset(false);
+                }
+
                 break;
             case R.id.activity_main_on_foot:
                 SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE,

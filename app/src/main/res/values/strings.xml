@@ -5,6 +5,8 @@
     <string name="stop_record">Stop Recording</string>
     <string name="target_state">Target State:</string>
     <string name="empty">EMPTY</string>
+    <string name="match">MATCH!!</string>
+    <string name="reset">RESET</string>
     <string name="on_foot">ON_FOOT</string>
     <string name="in_vehicle">IN_VEHICLE</string>
 </resources>
