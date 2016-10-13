@@ -160,10 +160,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             case R.id.activity_main_stop_record_button:
                 if (mIsRecording) {
                     stopRecording();
-                } else {
-                    changeViewsReset(false);
                 }
-
+                changeViewsReset(false);
                 break;
             case R.id.activity_main_on_foot:
                 SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE,

@@ -39,7 +39,7 @@ public class ActivityRecognitionIntentService extends IntentService {
                 message += new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()) + " || " +
                         String.format("%s: %d", ActivityUtil.getActivityTypeString(detectedActivity.getType()), detectedActivity.getConfidence()) + "\n";
 
-                if (target.equals(ActivityUtil.getActivityTypeString(detectedActivity.getType())) && detectedActivity.getConfidence() > 60) {
+                if (target.equals(ActivityUtil.getActivityTypeString(detectedActivity.getType())) && detectedActivity.getConfidence() > 90) {
                     SharedPreferenceUtil.saveBooleanPreference(this, SharedPreferenceUtil.MATCH_TARGET, true);
                 }
 
