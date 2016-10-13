@@ -11,11 +11,18 @@ public class SharedPreferenceUtil {
 
     public static String TARGET_STATE = "TARGET_STATE";
     public static String START_TIME = "START_TIME";
+    public static String MATCH_TARGET = "MATCH_TARGET";
 
     public static void saveStringPreference(Context context, String key, String value) {
         SharedPreferences prefs = context.getSharedPreferences(
                 context.getPackageName(), Context.MODE_PRIVATE);
         prefs.edit().putString(key, value).apply();
+    }
+
+    public static void saveBooleanPreference(Context context, String key, boolean value) {
+        SharedPreferences prefs = context.getSharedPreferences(
+                context.getPackageName(), Context.MODE_PRIVATE);
+        prefs.edit().putBoolean(key, value).apply();
     }
 
     public static void saveLongPreference(Context context, String key, long value) {
@@ -28,6 +35,12 @@ public class SharedPreferenceUtil {
         SharedPreferences prefs = context.getSharedPreferences(
                 context.getPackageName(), Context.MODE_PRIVATE);
         return prefs.getString(key, defValue);
+    }
+
+    public static boolean getBooleanPreference(Context context, String key, boolean defValue) {
+        SharedPreferences prefs = context.getSharedPreferences(
+                context.getPackageName(), Context.MODE_PRIVATE);
+        return prefs.getBoolean(key, defValue);
     }
 
     public static long getLongPreference(Context context, String key, long defValue) {

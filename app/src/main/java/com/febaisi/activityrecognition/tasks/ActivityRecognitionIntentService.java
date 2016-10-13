@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.febaisi.activityrecognition.Utils;
 import com.febaisi.activityrecognition.util.ActivityUtil;
+import com.febaisi.activityrecognition.util.SharedPreferenceUtil;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
@@ -32,9 +33,17 @@ public class ActivityRecognitionIntentService extends IntentService {
             Log.i(Utils.TAG, "ActivityRecognitionIntentService - onHandleIntent. HasResult");
             ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
 
+            //String target = SharedPreferenceUtil.getStringPreference(this, SharedPreferenceUtil.TARGET_STATE, "");
+            String target = "STILL";
+
             for (DetectedActivity detectedActivity:result.getProbableActivities()) {
                 message += new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()) + " || " +
                         String.format("%s: %d", ActivityUtil.getActivityTypeString(detectedActivity.getType()), detectedActivity.getConfidence()) + "\n";
+
+                if (target.equals(ActivityUtil.getActivityTypeString(detectedActivity.getType())) && detectedActivity.getConfidence() == 100) {
+                    SharedPreferenceUtil.saveBooleanPreference(this, SharedPreferenceUtil.MATCH_TARGET, true);
+                }
+
             }
             Log.i(Utils.TAG, message);
             Utils.writeToSDFile(getApplicationContext(), message, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
