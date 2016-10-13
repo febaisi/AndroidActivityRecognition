@@ -7,4 +7,6 @@ package com.febaisi.activityrecognition.services;
 public interface RecordingManager {
     boolean isRecording();
     void stopRecording();
+    long getCurrentRecordingTime();
+    void registerListener(RecordingListener recordingListener);
 }

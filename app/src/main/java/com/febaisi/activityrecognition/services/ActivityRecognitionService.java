@@ -15,6 +15,8 @@ import com.febaisi.activityrecognition.util.SharedPreferenceUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Created by BaisFe01 on 10/5/2016.
  */
@@ -25,6 +27,9 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
     private GoogleApiClient mGoogleApiClient;
     private Boolean mRecordingState = false;
     private RecordingController mRecordingController = new RecordingController();
+    private long mStartRecordingTime;
+    private long mFinalRecordingTime;
+    private RecordingListener mRecordingListener;
 
     @Override
     public void onCreate() {
@@ -35,6 +40,8 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(Utils.TAG, "ActivityRecognitionService - onStartCommand");
+
+        loadTime(intent);
 
         Connector connector = new Connector(this);
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -50,6 +57,12 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
             mGoogleApiClient.connect();
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void loadTime(Intent intent) {
+        if (intent == null) {
+            mStartRecordingTime = SharedPreferenceUtil.getLongPreference(this, SharedPreferenceUtil.START_TIME, 0);
+        }
     }
 
     @Override
@@ -77,14 +90,22 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
     @Override
     public void startMonitoringActivity() {
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            mRecordingState = true;
-            getSharedPreferences(this.getPackageName(), Context.MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
             Log.i(Utils.TAG, "ActivityRecognitionService - startActivityRecognition. requestActivityUpdates ");
+            mRecordingState = true;
+            if (mStartRecordingTime == 0){
+                saveStartCountTime(System.currentTimeMillis());
+            }
+            getSharedPreferences(this.getPackageName(), Context.MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
             ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 500,
                     PendingIntent.getService(this, 0,new Intent(this, ActivityRecognitionIntentService.class), PendingIntent.FLAG_UPDATE_CURRENT));
         } else {
             Log.e(Utils.TAG, "ActivityRecognitionService - startActivityRecognition. Unable to start sampling due to disconnected API client");
         }
+    }
+
+    private void saveStartCountTime(long time) {
+        mStartRecordingTime = time;
+        SharedPreferenceUtil.saveLongPreference(this, SharedPreferenceUtil.START_TIME, mStartRecordingTime);
     }
 
     @Override
@@ -94,16 +115,39 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
 
     @Override
     public void stopRecording() {
-        Log.i(Utils.TAG, "ActivityRecognitionService - stopRecording");
-        unregisterActivityRecognition();
-        mRecordingState = false;
-        stopSelf();
-        try {
-            finalize();
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
+        if (mRecordingState) {
+            Log.i(Utils.TAG, "ActivityRecognitionService - stopRecording");
+
+            mFinalRecordingTime = getCurrentRecordingTime();
+            mRecordingState = false;
+            saveStartCountTime(0);
+            unregisterActivityRecognition();
+
+            stopSelf();
+
+            if (mRecordingListener!=null) {
+                mRecordingListener.onRecordStop();
+            } else {
+                Log.i(Utils.TAG, "ActivityRecognitionService - stopRecording. Listener is null");
+            }
+
+            SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE, "");
+            SharedPreferenceUtil.saveBooleanPreference(this, SharedPreferenceUtil.MATCH_TARGET, false);
         }
-        SharedPreferenceUtil.saveBooleanPreference(this, SharedPreferenceUtil.MATCH_TARGET, false);
+    }
+
+    @Override
+    public long getCurrentRecordingTime() {
+        if (mRecordingState) {
+            return System.currentTimeMillis() - mStartRecordingTime;
+        } else {
+            return mFinalRecordingTime;
+        }
+    }
+
+    @Override
+    public void registerListener(RecordingListener recordingListener) {
+        mRecordingListener = recordingListener;
     }
 
     @Override

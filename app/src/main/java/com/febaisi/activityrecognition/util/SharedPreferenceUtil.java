@@ -12,6 +12,7 @@ public class SharedPreferenceUtil {
     public static String TARGET_STATE = "TARGET_STATE";
     public static String START_TIME = "START_TIME";
     public static String MATCH_TARGET = "MATCH_TARGET";
+    public static String FINAL_TIME= "FINAL_TIME";
 
     public static void saveStringPreference(Context context, String key, String value) {
         SharedPreferences prefs = context.getSharedPreferences(

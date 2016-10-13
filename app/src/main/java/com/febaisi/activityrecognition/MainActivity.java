@@ -14,12 +14,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.febaisi.activityrecognition.services.ActivityRecognitionService;
+import com.febaisi.activityrecognition.services.RecordingListener;
 import com.febaisi.activityrecognition.services.RecordingManager;
 import com.febaisi.activityrecognition.util.SharedPreferenceUtil;
 
 import java.text.SimpleDateFormat;
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection, View.OnClickListener {
+
+public class MainActivity extends AppCompatActivity implements ServiceConnection, View.OnClickListener, RecordingListener {
 
     private Context mContext;
     private Button mStopRecordButton;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         mRecordingManager = ((ActivityRecognitionService.RecordingController) service).getRecordingListener();
+        mRecordingManager.registerListener(this);
         mIsRecording = mRecordingManager.isRecording();
         enableButtons(mIsRecording);
         enableTicking(mIsRecording);
@@ -104,15 +107,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 public void run() {
                     try {
                         final SimpleDateFormat databaseDateTimeFormate = new SimpleDateFormat("mm:ss:SS");
-                        final long startRecordingTime = SharedPreferenceUtil.getLongPreference(mContext, SharedPreferenceUtil.START_TIME, 0);
                         while (mIsRecording) {
                             Thread.sleep(10);
-                            final long currentTickTime = System.currentTimeMillis();
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (mIsRecording)
-                                        mCurrentTime.setText(databaseDateTimeFormate.format(currentTickTime - startRecordingTime));
+                                    mCurrentTime.setText(databaseDateTimeFormate.format(mRecordingManager.getCurrentRecordingTime()));
                                 }
                             });
                         }
@@ -122,15 +122,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             };
             t.start();
-        } else {
-            mCurrentTime.setText("00:00:00");
         }
-
     }
 
     private void stopRecording() {
-        SharedPreferenceUtil.saveLongPreference(this, SharedPreferenceUtil.START_TIME, 0);
-        SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE, "");
         updateTargetDescription();
         mIsRecording = false;
         mRecordingManager.stopRecording();
@@ -143,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         mContext.startService(mServiceIntent);
         enableButtons(true);
         enableTicking(true);
-        SharedPreferenceUtil.saveLongPreference(this, SharedPreferenceUtil.START_TIME, System.currentTimeMillis());
+
     }
 
     @Override
@@ -166,5 +161,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 startRecording();
                 break;
         }
+    }
+
+    @Override
+    public void onRecordStop() {
+        Log.i(Utils.TAG, "MainActivity - onRecordStop");
+        stopRecording();
     }
 }
