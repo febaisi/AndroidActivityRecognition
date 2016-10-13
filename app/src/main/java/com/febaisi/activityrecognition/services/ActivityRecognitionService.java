@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.util.Log;
 
 import com.febaisi.activityrecognition.Utils;
@@ -127,10 +128,8 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
 
             if (mRecordingListener!=null) {
                 mRecordingListener.onRecordStop();
-            } else {
-                Log.i(Utils.TAG, "ActivityRecognitionService - stopRecording. Listener is null");
             }
-
+            vibrate();
             SharedPreferenceUtil.saveStringPreference(this, SharedPreferenceUtil.TARGET_STATE, "");
             SharedPreferenceUtil.saveBooleanPreference(this, SharedPreferenceUtil.MATCH_TARGET, false);
         }
@@ -167,4 +166,10 @@ public class ActivityRecognitionService extends Service implements ActivityTrack
     public void onDestroy() {
         Log.i(Utils.TAG, "ActivityRecognitionService - onDestroy");
     }
+
+    private void vibrate(){
+        Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(1000);
+    }
+
 }

@@ -168,4 +168,5 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Log.i(Utils.TAG, "MainActivity - onRecordStop");
         stopRecording();
     }
+
 }
